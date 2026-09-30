@@ -141,7 +141,35 @@ if (!window.SharedArrayBuffer) {
 	setTimeout(() => document.getElementById('status').style.display = '', 1500);
 }
 </script>
+<script>
+console.log("LUNA: before COI script");
+console.log("LUNA: crossOriginIsolated =", window.crossOriginIsolated);
+console.log(
+    "LUNA: serviceWorker.controller =",
+    navigator.serviceWorker && navigator.serviceWorker.controller
+);
+</script>
+
 <script src="coi-serviceworker.min.js"></script>
+
+<script>
+console.log("LUNA: after COI script");
+console.log("LUNA: crossOriginIsolated =", window.crossOriginIsolated);
+console.log(
+    "LUNA: serviceWorker.controller =",
+    navigator.serviceWorker && navigator.serviceWorker.controller
+);
+
+if (navigator.serviceWorker) {
+    navigator.serviceWorker.ready.then(function(registration) {
+        console.log("LUNA: serviceWorker.ready");
+        console.log("LUNA: registration.active =", registration.active);
+        console.log("LUNA: controller =", navigator.serviceWorker.controller);
+        console.log("LUNA: crossOriginIsolated =", window.crossOriginIsolated);
+    });
+}
+</script>
+
 <script src="index.js"></script>
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4754944,"index.wasm":27913656},"focusCanvas":true,"gdextensionLibs":[]};
