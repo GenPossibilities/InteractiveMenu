@@ -44,6 +44,7 @@ body {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	/* don't consume click events - make children visible explicitly */
 	visibility: hidden;
 }
 
@@ -91,8 +92,8 @@ body {
 	position: absolute;
 }
 
-#status-indeterminate > div:nth-child(1) { transform: rotate(22.5deg); }
-#status-indeterminate > div:nth-child(2) { transform: rotate(67.5deg); }
+#status-indeterminate > div:nth-child(1) { transform: rotate( 22.5deg); }
+#status-indeterminate > div:nth-child(2) { transform: rotate( 67.5deg); }
 #status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
 #status-indeterminate > div:nth-child(4) { transform: rotate(157.5deg); }
 #status-indeterminate > div:nth-child(5) { transform: rotate(202.5deg); }
@@ -103,26 +104,24 @@ body {
 #status-notice {
 	margin: 0 100px;
 	line-height: 1.3;
+	visibility: visible;
 	padding: 4px 6px;
 	visibility: visible;
 }
 		</style>
+		<link id='-gd-engine-icon' rel='icon' type='image/png' href='index.icon.png' />
+<link rel='apple-touch-icon' href='index.apple-touch-icon.png'/>
 
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png">
-		<link rel="apple-touch-icon" href="index.apple-touch-icon.png">
 	</head>
-
 	<body>
 		<canvas id="canvas">
-			HTML5 canvas appears to be unsupported in the current browser.<br>
+			HTML5 canvas appears to be unsupported in the current browser.<br >
 			Please try updating or use a different browser.
 		</canvas>
-
 		<div id="status">
 			<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();">
-				<div id="status-progress-inner"></div>
+				<div id ="status-progress-inner"></div>
 			</div>
-
 			<div id="status-indeterminate" style="display: none;" oncontextmenu="event.preventDefault();">
 				<div></div>
 				<div></div>
@@ -133,373 +132,124 @@ body {
 				<div></div>
 				<div></div>
 			</div>
-
 			<div id="status-notice" class="godot" style="display: none;"></div>
 		</div>
 
-
-		<!-- ================================================= -->
-		<!-- COI SERVICE WORKER -->
-		<!-- ================================================= -->
-
-		<script src="coi-serviceworker.min.js"></script>
-
-
-		<!-- ================================================= -->
-		<!-- GODOT STARTUP -->
-		<!-- ================================================= -->
-
 		<script>
-
-function loadGodotScript() {
-	return new Promise((resolve, reject) => {
-
-		const script = document.createElement("script");
-
-		script.src = "index.js";
-
-		script.onload = resolve;
-
-		script.onerror = () => {
-			reject(new Error("Failed to load Godot index.js"));
-		};
-
-		document.body.appendChild(script);
-	});
+if (!window.SharedArrayBuffer) {
+	document.getElementById('status').style.display = 'none';
+	setTimeout(() => document.getElementById('status').style.display = '', 1500);
 }
+</script>
+<script src="coi-serviceworker.min.js"></script>
+<script src="index.js"></script>
+		<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4755408,"index.wasm":27913656},"focusCanvas":true,"gdextensionLibs":[]};
+const engine = new Engine(GODOT_CONFIG);
 
+(function () {
+	const INDETERMINATE_STATUS_STEP_MS = 100;
+	const statusProgress = document.getElementById('status-progress');
+	const statusProgressInner = document.getElementById('status-progress-inner');
+	const statusIndeterminate = document.getElementById('status-indeterminate');
+	const statusNotice = document.getElementById('status-notice');
 
-async function waitForCrossOriginIsolation() {
+	let initializing = true;
+	let statusMode = 'hidden';
 
-	if (window.crossOriginIsolated === true) {
-		return;
-	}
-
-	await new Promise((resolve, reject) => {
-
-		const startTime = Date.now();
-
-		const check = () => {
-
-			if (window.crossOriginIsolated === true) {
-				resolve();
-				return;
-			}
-
-			/*
-			 * Give the COI service worker some time to
-			 * take control of the page.
-			 */
-
-			if (Date.now() - startTime > 10000) {
-				reject(
-					new Error(
-						"Cross-Origin Isolation could not be established."
-					)
-				);
-				return;
-			}
-
-			setTimeout(check, 100);
-		};
-
-		check();
-	});
-}
-
-
-async function startGodot() {
-
-	try {
-
-		/*
-		 * Wait until the COI service worker has established
-		 * cross-origin isolation.
-		 */
-
-		await waitForCrossOriginIsolation();
-
-
-		/*
-		 * Only now load Godot's JavaScript engine.
-		 */
-
-		await loadGodotScript();
-
-
-		/*
-		 * Godot configuration.
-		 */
-
-		const GODOT_CONFIG = {
-			"args": [],
-			"canvasResizePolicy": 2,
-			"executable": "index",
-			"experimentalVK": false,
-			"fileSizes": {
-				"index.pck": 4745760,
-				"index.wasm": 27913656
-			},
-			"focusCanvas": true,
-			"gdextensionLibs": []
-		};
-
-
-		/*
-		 * Create the Godot engine only after index.js
-		 * has finished loading.
-		 */
-
-		const engine = new Engine(GODOT_CONFIG);
-
-
-		const INDETERMINATE_STATUS_STEP_MS = 100;
-
-		const statusProgress =
-			document.getElementById("status-progress");
-
-		const statusProgressInner =
-			document.getElementById("status-progress-inner");
-
-		const statusIndeterminate =
-			document.getElementById("status-indeterminate");
-
-		const statusNotice =
-			document.getElementById("status-notice");
-
-
-		let initializing = true;
-		let statusMode = "hidden";
-
-		let animationCallbacks = [];
-
-
-		function animate(time) {
-
-			animationCallbacks.forEach(
-				(callback) => callback(time)
-			);
-
-			requestAnimationFrame(animate);
-		}
-
+	let animationCallbacks = [];
+	function animate(time) {
+		animationCallbacks.forEach((callback) => callback(time));
 		requestAnimationFrame(animate);
-
-
-		function animateStatusIndeterminate(ms) {
-
-			const i =
-				Math.floor(
-					(ms / INDETERMINATE_STATUS_STEP_MS) % 8
-				);
-
-			if (
-				statusIndeterminate.children[i]
-					.style.borderTopColor === ""
-			) {
-
-				Array.prototype
-					.slice
-					.call(statusIndeterminate.children)
-					.forEach((child) => {
-						child.style.borderTopColor = "";
-					});
-
-				statusIndeterminate
-					.children[i]
-					.style.borderTopColor = "#dfdfdf";
-			}
-		}
-
-
-		function setStatusMode(mode) {
-
-			if (
-				statusMode === mode ||
-				!initializing
-			) {
-				return;
-			}
-
-			[
-				statusProgress,
-				statusIndeterminate,
-				statusNotice
-			].forEach((elem) => {
-				elem.style.display = "none";
-			});
-
-
-			animationCallbacks =
-				animationCallbacks.filter(function (value) {
-					return value !== animateStatusIndeterminate;
-				});
-
-
-			switch (mode) {
-
-				case "progress":
-
-					statusProgress.style.display = "block";
-
-					break;
-
-
-				case "indeterminate":
-
-					statusIndeterminate.style.display = "block";
-
-					animationCallbacks.push(
-						animateStatusIndeterminate
-					);
-
-					break;
-
-
-				case "notice":
-
-					statusNotice.style.display = "block";
-
-					break;
-
-
-				case "hidden":
-
-					break;
-
-
-				default:
-
-					throw new Error("Invalid status mode");
-			}
-
-
-			statusMode = mode;
-		}
-
-
-		function setStatusNotice(text) {
-
-			while (statusNotice.lastChild) {
-				statusNotice.removeChild(
-					statusNotice.lastChild
-				);
-			}
-
-
-			const lines = text.split("\n");
-
-
-			lines.forEach((line) => {
-
-				statusNotice.appendChild(
-					document.createTextNode(line)
-				);
-
-				statusNotice.appendChild(
-					document.createElement("br")
-				);
-			});
-		}
-
-
-		function displayFailureNotice(err) {
-
-			const msg = err.message || err;
-
-			console.error(msg);
-
-			setStatusNotice(msg);
-
-			setStatusMode("notice");
-
-			initializing = false;
-		}
-
-
-		/*
-		 * Check whether the browser still lacks any
-		 * required Godot Web features.
-		 */
-
-		const missing = Engine.getMissingFeatures();
-
-
-		if (missing.length !== 0) {
-
-			const missingMsg =
-				"Error\nThe following features required to run Godot projects on the Web are missing:\n";
-
-			displayFailureNotice(
-				missingMsg + missing.join("\n")
-			);
-
-		} else {
-
-			setStatusMode("indeterminate");
-
-
-			engine.startGame({
-
-				"onProgress": function(current, total) {
-
-					if (total > 0) {
-
-						statusProgressInner.style.width =
-							`${(current / total) * 100}%`;
-
-						setStatusMode("progress");
-
-
-						if (current === total) {
-
-							setTimeout(() => {
-
-								setStatusMode("indeterminate");
-
-							}, 500);
-						}
-
-					} else {
-
-						setStatusMode("indeterminate");
-					}
-				},
-
-			}).then(() => {
-
-				setStatusMode("hidden");
-
-				initializing = false;
-
-			}, displayFailureNotice);
-		}
-
-	} catch (err) {
-
-		console.error(err);
-
-		const statusNotice =
-			document.getElementById("status-notice");
-
-		statusNotice.textContent =
-			err.message || err;
-
-		statusNotice.style.display = "block";
 	}
-}
+	requestAnimationFrame(animate);
 
+	function animateStatusIndeterminate(ms) {
+		const i = Math.floor((ms / INDETERMINATE_STATUS_STEP_MS) % 8);
+		if (statusIndeterminate.children[i].style.borderTopColor === '') {
+			Array.prototype.slice.call(statusIndeterminate.children).forEach((child) => {
+				child.style.borderTopColor = '';
+			});
+			statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
+		}
+	}
 
-/*
- * Start the process.
- *
- * coi-serviceworker.min.js has already been loaded,
- * so startGodot() will first wait for crossOriginIsolated.
- */
+	function setStatusMode(mode) {
+		if (statusMode === mode || !initializing) {
+			return;
+		}
+		[statusProgress, statusIndeterminate, statusNotice].forEach((elem) => {
+			elem.style.display = 'none';
+		});
+		animationCallbacks = animationCallbacks.filter(function (value) {
+			return (value !== animateStatusIndeterminate);
+		});
+		switch (mode) {
+		case 'progress':
+			statusProgress.style.display = 'block';
+			break;
+		case 'indeterminate':
+			statusIndeterminate.style.display = 'block';
+			animationCallbacks.push(animateStatusIndeterminate);
+			break;
+		case 'notice':
+			statusNotice.style.display = 'block';
+			break;
+		case 'hidden':
+			break;
+		default:
+			throw new Error('Invalid status mode');
+		}
+		statusMode = mode;
+	}
 
-startGodot();
+	function setStatusNotice(text) {
+		while (statusNotice.lastChild) {
+			statusNotice.removeChild(statusNotice.lastChild);
+		}
+		const lines = text.split('\n');
+		lines.forEach((line) => {
+			statusNotice.appendChild(document.createTextNode(line));
+			statusNotice.appendChild(document.createElement('br'));
+		});
+	}
 
+	function displayFailureNotice(err) {
+		const msg = err.message || err;
+		console.error(msg);
+		setStatusNotice(msg);
+		setStatusMode('notice');
+		initializing = false;
+	}
+
+	const missing = Engine.getMissingFeatures();
+	if (missing.length !== 0) {
+		const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+		displayFailureNotice(missingMsg + missing.join('\n'));
+	} else {
+		setStatusMode('indeterminate');
+		engine.startGame({
+			'onProgress': function (current, total) {
+				if (total > 0) {
+					statusProgressInner.style.width = `${(current / total) * 100}%`;
+					setStatusMode('progress');
+					if (current === total) {
+						// wait for progress bar animation
+						setTimeout(() => {
+							setStatusMode('indeterminate');
+						}, 500);
+					}
+				} else {
+					setStatusMode('indeterminate');
+				}
+			},
+		}).then(() => {
+			setStatusMode('hidden');
+			initializing = false;
+		}, displayFailureNotice);
+	}
+}());
 		</script>
-
 	</body>
 </html>
+
