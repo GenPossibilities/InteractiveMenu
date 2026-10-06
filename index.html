@@ -1,429 +1,505 @@
 <!DOCTYPE html>
-
-<html lang="en"> <head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, user-scalable=no"> <title>Interactive Menu</title> <style> body { touch-action: none; margin: 0; border: 0 none; padding: 0; text-align: center; background-color: black; }
-
-#canvas {
-display: block;
-margin: 0;
-color: white;
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no">
+		<title>Interactive Menu_json</title>
+		<style>
+body {
+	touch-action: none;
+	margin: 0;
+	border: 0 none;
+	padding: 0;
+	text-align: center;
+	background-color: black;
 }
 
 #canvas {
-outline: none;
+	display: block;
+	margin: 0;
+	color: white;
+}
+
+#canvas:focus {
+	outline: none;
 }
 
 .godot {
-font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
-color: #e0e0e0;
-background-color: #3b3943;
-background-image: linear-gradient(to bottom, #403e48, #35333c);
-border: 1px solid #45434e;
-box-shadow: 0 0 1px 1px #2f2d35;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	color: #e0e0e0;
+	background-color: #3b3943;
+	background-image: linear-gradient(to bottom, #403e48, #35333c);
+	border: 1px solid #45434e;
+	box-shadow: 0 0 1px 1px #2f2d35;
 }
 
 /* Status display */
 
 #status {
-position: absolute;
-left: 0;
-top: 0;
-right: 0;
-bottom: 0;
-display: flex;
-justify-content: center;
-align-items: center;
-/* don't consume click events - make children visible explicitly */
-visibility: hidden;
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	visibility: hidden;
 }
 
 #status-progress {
-width: 366px;
-height: 7px;
-background-color: #38363A;
-border: 1px solid #444246;
-padding: 1px;
-box-shadow: 0 0 2px 1px #1B1C22;
-border-radius: 2px;
-visibility: visible;
+	width: 366px;
+	height: 7px;
+	background-color: #38363A;
+	border: 1px solid #444246;
+	padding: 1px;
+	box-shadow: 0 0 2px 1px #1B1C22;
+	border-radius: 2px;
+	visibility: visible;
 }
 
-@media only screen and (orientation) {
-#status-progress {
-width: 61.8%;
-}
+@media only screen and (orientation:portrait) {
+	#status-progress {
+		width: 61.8%;
+	}
 }
 
 #status-progress-inner {
-height: 100%;
-width: 0;
-box-sizing: border-box;
-transition: width 0.5s linear;
-background-color: #202020;
-border: 1px solid #222223;
-box-shadow: 0 0 1px 1px #27282E;
-border-radius: 3px;
+	height: 100%;
+	width: 0;
+	box-sizing: border-box;
+	transition: width 0.5s linear;
+	background-color: #202020;
+	border: 1px solid #222223;
+	box-shadow: 0 0 1px 1px #27282E;
+	border-radius: 3px;
 }
 
 #status-indeterminate {
-height: 42px;
-visibility: visible;
-position: relative;
+	height: 42px;
+	visibility: visible;
+	position: relative;
 }
 
 #status-indeterminate > div {
-width: 4.5px;
-height: 0;
-border-style: solid;
-border-width: 9px 3px 0 3px;
-border-color: #2b2b2b transparent transparent transparent;
-transform-origin: center 21px;
-position: absolute;
+	width: 4.5px;
+	height: 0;
+	border-style: solid;
+	border-width: 9px 3px 0 3px;
+	border-color: #2b2b2b transparent transparent transparent;
+	transform-origin: center 21px;
+	position: absolute;
 }
 
-#status-indeterminate > div(1) { transform: rotate( 22.5deg); }
-#status-indeterminate > div(2) { transform: rotate( 67.5deg); }
-#status-indeterminate > div(3) { transform: rotate(112.5deg); }
-#status-indeterminate > div(4) { transform: rotate(157.5deg); }
-#status-indeterminate > div(5) { transform: rotate(202.5deg); }
-#status-indeterminate > div(6) { transform: rotate(247.5deg); }
-#status-indeterminate > div(7) { transform: rotate(292.5deg); }
-#status-indeterminate > div(8) { transform: rotate(337.5deg); }
+#status-indeterminate > div:nth-child(1) { transform: rotate(22.5deg); }
+#status-indeterminate > div:nth-child(2) { transform: rotate(67.5deg); }
+#status-indeterminate > div:nth-child(3) { transform: rotate(112.5deg); }
+#status-indeterminate > div:nth-child(4) { transform: rotate(157.5deg); }
+#status-indeterminate > div:nth-child(5) { transform: rotate(202.5deg); }
+#status-indeterminate > div:nth-child(6) { transform: rotate(247.5deg); }
+#status-indeterminate > div:nth-child(7) { transform: rotate(292.5deg); }
+#status-indeterminate > div:nth-child(8) { transform: rotate(337.5deg); }
 
 #status-notice {
-margin: 0 100px;
-line-height: 1.3;
-visibility: visible;
-padding: 4px 6px;
-visibility: visible;
+	margin: 0 100px;
+	line-height: 1.3;
+	padding: 4px 6px;
+	visibility: visible;
 }
-</style>
-<link id='-gd-engine-icon' rel='icon' type='image/png' href='index.icon.png' />
-<link rel='apple-touch-icon' href='index.apple-touch-icon.png'/>
-</head>
+		</style>
 
-<body>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png">
+		<link rel="apple-touch-icon" href="index.apple-touch-icon.png">
+	</head>
 
-	<canvas id="canvas">
-		HTML5 canvas appears to be unsupported in the current browser.<br >
-		Please try updating or use a different browser.
-	</canvas>
+	<body>
+		<canvas id="canvas">
+			HTML5 canvas appears to be unsupported in the current browser.<br>
+			Please try updating or use a different browser.
+		</canvas>
 
-	<div id="status">
-		<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();">
-			<div id ="status-progress-inner"></div>
+		<div id="status">
+			<div id="status-progress" style="display: none;" oncontextmenu="event.preventDefault();">
+				<div id="status-progress-inner"></div>
+			</div>
+
+			<div id="status-indeterminate" style="display: none;" oncontextmenu="event.preventDefault();">
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
+
+			<div id="status-notice" class="godot" style="display: none;"></div>
 		</div>
 
-		<div id="status-indeterminate" style="display: none;" oncontextmenu="event.preventDefault();">
-			<div></div>
-			<div></div>
-			<div></div>
-			<div></div>
-			<div></div>
-			<div></div>
-			<div></div>
-			<div></div>
-		</div>
 
-		<div id="status-notice" class="godot" style="display: none;"></div>
-	</div>
+		<!-- ================================================= -->
+		<!-- COI SERVICE WORKER -->
+		<!-- ================================================= -->
+
+		<script src="coi-serviceworker.min.js"></script>
 
 
-	<script>
+		<!-- ================================================= -->
+		<!-- GODOT STARTUP -->
+		<!-- ================================================= -->
 
-if (!window.SharedArrayBuffer) {
-document.getElementById('status').style.display = 'none';
-setTimeout(() => document.getElementById('status').style.display = '', 1500);
+		<script>
+
+function loadGodotScript() {
+	return new Promise((resolve, reject) => {
+
+		const script = document.createElement("script");
+
+		script.src = "index.js";
+
+		script.onload = resolve;
+
+		script.onerror = () => {
+			reject(new Error("Failed to load Godot index.js"));
+		};
+
+		document.body.appendChild(script);
+	});
 }
-</script>
-
-	<!-- LUNA diagnostic: state before COI service worker -->
-	<script>
-
-console.log("LUNA: before COI script");
-console.log("LUNA: crossOriginIsolated =", window.crossOriginIsolated);
-console.log(
-"LUNA: serviceWorker.controller =",
-navigator.serviceWorker && navigator.serviceWorker.controller
-);
-</script>
-
-	<!-- COI service worker -->
-	<script src="coi-serviceworker.min.js"></script>
 
 
-	<!-- LUNA diagnostic + controlled Godot startup -->
-	<script>
+async function waitForCrossOriginIsolation() {
 
-console.log("LUNA: after COI script");
-console.log("LUNA: crossOriginIsolated =", window.crossOriginIsolated);
-console.log(
-"LUNA: serviceWorker.controller =",
-navigator.serviceWorker && navigator.serviceWorker.controller
-);
-
-function startGodot() {
-
-console.log("LUNA: starting Godot");
-console.log("LUNA: crossOriginIsolated =", window.crossOriginIsolated);
-
-const GODOT_CONFIG = {
-	"args": [],
-	"canvasResizePolicy": 2,
-	"executable": "index",
-	"experimentalVK": false,
-	"fileSizes": {
-		"index.pck": 4754944,
-		"index.wasm": 27913656
-	},
-	"focusCanvas": true,
-	"gdextensionLibs": []
-};
-
-const engine = new Engine(GODOT_CONFIG);
-
-(function () {
-
-	const INDETERMINATE_STATUS_STEP_MS = 100;
-	const statusProgress = document.getElementById('status-progress');
-	const statusProgressInner = document.getElementById('status-progress-inner');
-	const statusIndeterminate = document.getElementById('status-indeterminate');
-	const statusNotice = document.getElementById('status-notice');
-
-	let initializing = true;
-	let statusMode = 'hidden';
-
-	let animationCallbacks = [];
-
-	function animate(time) {
-		animationCallbacks.forEach((callback) => callback(time));
-		requestAnimationFrame(animate);
+	if (window.crossOriginIsolated === true) {
+		return;
 	}
 
-	requestAnimationFrame(animate);
+	await new Promise((resolve, reject) => {
+
+		const startTime = Date.now();
+
+		const check = () => {
+
+			if (window.crossOriginIsolated === true) {
+				resolve();
+				return;
+			}
+
+			/*
+			 * Give the COI service worker some time to
+			 * take control of the page.
+			 */
+
+			if (Date.now() - startTime > 10000) {
+				reject(
+					new Error(
+						"Cross-Origin Isolation could not be established."
+					)
+				);
+				return;
+			}
+
+			setTimeout(check, 100);
+		};
+
+		check();
+	});
+}
 
 
-	function animateStatusIndeterminate(ms) {
+async function startGodot() {
 
-		const i = Math.floor(
-			(ms / INDETERMINATE_STATUS_STEP_MS) % 8
-		);
+	try {
 
-		if (statusIndeterminate.children[i].style.borderTopColor === '') {
+		/*
+		 * Wait until the COI service worker has established
+		 * cross-origin isolation.
+		 */
 
-			Array.prototype.slice.call(
-				statusIndeterminate.children
-			).forEach((child) => {
-				child.style.borderTopColor = '';
+		await waitForCrossOriginIsolation();
+
+
+		/*
+		 * Only now load Godot's JavaScript engine.
+		 */
+
+		await loadGodotScript();
+
+
+		/*
+		 * Godot configuration.
+		 */
+
+		const GODOT_CONFIG = {
+			"args": [],
+			"canvasResizePolicy": 2,
+			"executable": "index",
+			"experimentalVK": false,
+			"fileSizes": {
+				"index.pck": 4745760,
+				"index.wasm": 27913656
+			},
+			"focusCanvas": true,
+			"gdextensionLibs": []
+		};
+
+
+		/*
+		 * Create the Godot engine only after index.js
+		 * has finished loading.
+		 */
+
+		const engine = new Engine(GODOT_CONFIG);
+
+
+		const INDETERMINATE_STATUS_STEP_MS = 100;
+
+		const statusProgress =
+			document.getElementById("status-progress");
+
+		const statusProgressInner =
+			document.getElementById("status-progress-inner");
+
+		const statusIndeterminate =
+			document.getElementById("status-indeterminate");
+
+		const statusNotice =
+			document.getElementById("status-notice");
+
+
+		let initializing = true;
+		let statusMode = "hidden";
+
+		let animationCallbacks = [];
+
+
+		function animate(time) {
+
+			animationCallbacks.forEach(
+				(callback) => callback(time)
+			);
+
+			requestAnimationFrame(animate);
+		}
+
+		requestAnimationFrame(animate);
+
+
+		function animateStatusIndeterminate(ms) {
+
+			const i =
+				Math.floor(
+					(ms / INDETERMINATE_STATUS_STEP_MS) % 8
+				);
+
+			if (
+				statusIndeterminate.children[i]
+					.style.borderTopColor === ""
+			) {
+
+				Array.prototype
+					.slice
+					.call(statusIndeterminate.children)
+					.forEach((child) => {
+						child.style.borderTopColor = "";
+					});
+
+				statusIndeterminate
+					.children[i]
+					.style.borderTopColor = "#dfdfdf";
+			}
+		}
+
+
+		function setStatusMode(mode) {
+
+			if (
+				statusMode === mode ||
+				!initializing
+			) {
+				return;
+			}
+
+			[
+				statusProgress,
+				statusIndeterminate,
+				statusNotice
+			].forEach((elem) => {
+				elem.style.display = "none";
 			});
 
-			statusIndeterminate.children[i].style.borderTopColor = '#dfdfdf';
+
+			animationCallbacks =
+				animationCallbacks.filter(function (value) {
+					return value !== animateStatusIndeterminate;
+				});
+
+
+			switch (mode) {
+
+				case "progress":
+
+					statusProgress.style.display = "block";
+
+					break;
+
+
+				case "indeterminate":
+
+					statusIndeterminate.style.display = "block";
+
+					animationCallbacks.push(
+						animateStatusIndeterminate
+					);
+
+					break;
+
+
+				case "notice":
+
+					statusNotice.style.display = "block";
+
+					break;
+
+
+				case "hidden":
+
+					break;
+
+
+				default:
+
+					throw new Error("Invalid status mode");
+			}
+
+
+			statusMode = mode;
 		}
-	}
 
 
-	function setStatusMode(mode) {
+		function setStatusNotice(text) {
 
-		if (statusMode === mode || !initializing) {
-			return;
-		}
-
-		[
-			statusProgress,
-			statusIndeterminate,
-			statusNotice
-		].forEach((elem) => {
-			elem.style.display = 'none';
-		});
-
-		animationCallbacks = animationCallbacks.filter(function (value) {
-			return (value !== animateStatusIndeterminate);
-		});
-
-		switch (mode) {
-
-			case 'progress':
-				statusProgress.style.display = 'block';
-				break;
-
-			case 'indeterminate':
-				statusIndeterminate.style.display = 'block';
-				animationCallbacks.push(
-					animateStatusIndeterminate
+			while (statusNotice.lastChild) {
+				statusNotice.removeChild(
+					statusNotice.lastChild
 				);
-				break;
+			}
 
-			case 'notice':
-				statusNotice.style.display = 'block';
-				break;
 
-			case 'hidden':
-				break;
+			const lines = text.split("\n");
 
-			default:
-				throw new Error('Invalid status mode');
+
+			lines.forEach((line) => {
+
+				statusNotice.appendChild(
+					document.createTextNode(line)
+				);
+
+				statusNotice.appendChild(
+					document.createElement("br")
+				);
+			});
 		}
 
-		statusMode = mode;
-	}
 
+		function displayFailureNotice(err) {
 
-	function setStatusNotice(text) {
+			const msg = err.message || err;
 
-		while (statusNotice.lastChild) {
-			statusNotice.removeChild(statusNotice.lastChild);
-		}
+			console.error(msg);
 
-		const lines = text.split('\n');
+			setStatusNotice(msg);
 
-		lines.forEach((line) => {
-			statusNotice.appendChild(
-				document.createTextNode(line)
-			);
-
-			statusNotice.appendChild(
-				document.createElement('br')
-			);
-		});
-	}
-
-
-	function displayFailureNotice(err) {
-
-		const msg = err.message || err;
-
-		console.error(msg);
-
-		setStatusNotice(msg);
-
-		setStatusMode('notice');
-
-		initializing = false;
-	}
-
-
-	const missing = Engine.getMissingFeatures();
-
-	if (missing.length !== 0) {
-
-		const missingMsg =
-			'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-
-		displayFailureNotice(
-			missingMsg + missing.join('\n')
-		);
-
-	} else {
-
-		setStatusMode('indeterminate');
-
-		engine.startGame({
-
-			'onProgress': function (current, total) {
-
-				if (total > 0) {
-
-					statusProgressInner.style.width =
-						`${(current / total) * 100}%`;
-
-					setStatusMode('progress');
-
-					if (current === total) {
-
-						// wait for progress bar animation
-
-						setTimeout(() => {
-							setStatusMode('indeterminate');
-						}, 500);
-					}
-
-				} else {
-
-					setStatusMode('indeterminate');
-				}
-			},
-
-		}).then(() => {
-
-			setStatusMode('hidden');
+			setStatusMode("notice");
 
 			initializing = false;
+		}
 
-		}, displayFailureNotice);
+
+		/*
+		 * Check whether the browser still lacks any
+		 * required Godot Web features.
+		 */
+
+		const missing = Engine.getMissingFeatures();
+
+
+		if (missing.length !== 0) {
+
+			const missingMsg =
+				"Error\nThe following features required to run Godot projects on the Web are missing:\n";
+
+			displayFailureNotice(
+				missingMsg + missing.join("\n")
+			);
+
+		} else {
+
+			setStatusMode("indeterminate");
+
+
+			engine.startGame({
+
+				"onProgress": function(current, total) {
+
+					if (total > 0) {
+
+						statusProgressInner.style.width =
+							`${(current / total) * 100}%`;
+
+						setStatusMode("progress");
+
+
+						if (current === total) {
+
+							setTimeout(() => {
+
+								setStatusMode("indeterminate");
+
+							}, 500);
+						}
+
+					} else {
+
+						setStatusMode("indeterminate");
+					}
+				},
+
+			}).then(() => {
+
+				setStatusMode("hidden");
+
+				initializing = false;
+
+			}, displayFailureNotice);
+		}
+
+	} catch (err) {
+
+		console.error(err);
+
+		const statusNotice =
+			document.getElementById("status-notice");
+
+		statusNotice.textContent =
+			err.message || err;
+
+		statusNotice.style.display = "block";
 	}
-
-}());
-
 }
 
-function loadGodot() {
 
-console.log("LUNA: loading index.js");
-console.log("LUNA: crossOriginIsolated =", window.crossOriginIsolated);
+/*
+ * Start the process.
+ *
+ * coi-serviceworker.min.js has already been loaded,
+ * so startGodot() will first wait for crossOriginIsolated.
+ */
 
-const script = document.createElement("script");
+startGodot();
 
-script.src = "index.js";
+		</script>
 
-script.onload = function () {
-
-	console.log("LUNA: index.js loaded");
-
-	startGodot();
-};
-
-script.onerror = function () {
-
-	console.error("LUNA: failed to load index.js");
-
-};
-
-document.head.appendChild(script);
-
-}
-
-if (window.crossOriginIsolated) {
-
-console.log("LUNA: page is already isolated");
-
-loadGodot();
-
-} else {
-
-console.log("LUNA: page is NOT isolated");
-console.log("LUNA: waiting for COI...");
-
-let coiWaitStart = Date.now();
-
-const coiTimer = setInterval(function () {
-
-	console.log(
-		"LUNA: checking COI =",
-		window.crossOriginIsolated
-	);
-
-	if (window.crossOriginIsolated) {
-
-		clearInterval(coiTimer);
-
-		console.log("LUNA: COI acquired");
-
-		loadGodot();
-
-	} else if (Date.now() - coiWaitStart > 10000) {
-
-		clearInterval(coiTimer);
-
-		console.error(
-			"LUNA: COI was not acquired within 10 seconds"
-		);
-	}
-
-}, 100);
-
-}
-
-	</script>
-
-</body>
-
+	</body>
 </html>
